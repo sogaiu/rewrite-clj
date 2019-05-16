@@ -38,7 +38,8 @@
    prefix suffix]
 
   [rewrite-clj.zip.find
-   find find-next
+   find find-last-by-pos
+   find-next
    find-depth-first
    find-next-depth-first
    find-tag find-next-tag

@@ -16,6 +16,16 @@
            (additional node)))
     #(= (base/tag %) t)))
 
+(defn- position-in-range? [zloc pos]
+  (let [[r c] (if (map? pos) [(:row pos) (:col pos)] pos)]
+    (when (or (<= r 0) (<= c 0))
+      (throw (ex-info "zipper row and col positions are ones-based" {:pos pos})))
+    (let [[[zstart-row zstart-col] [zend-row zend-col]] (z/position-span zloc)]
+      (and (>= r zstart-row)
+           (<= r zend-row)
+           (if (= r zstart-row) (>= c zstart-col) true)
+           (if (= r zend-row) (< c zend-col) true)))))
+
 ;; ## Find Operations
 
 (defn find
@@ -31,6 +41,20 @@
         (take-while (complement m/end?))
         (drop-while (complement p?))
         (first))))
+
+(defn find-last-by-pos
+  "Find last node (if more than one node) that is in range of `pos` and
+  satisfying the given predicate depth first from initial zipper
+  location."
+  ([zloc pos] (find-last-by-pos zloc pos (constantly true)))
+  ([zloc pos p?]
+   (->> zloc
+        (iterate z/next)
+        (take-while identity)
+        (take-while (complement m/end?))
+        (filter #(and (p? %)
+                      (position-in-range? % pos)))
+        last)))
 
 (defn find-depth-first
   "Find node satisfying the given predicate by traversing
