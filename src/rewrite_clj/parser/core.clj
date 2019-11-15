@@ -12,6 +12,10 @@
 
 ;; ## Base Parser
 
+(def ^:dynamic *parse-anyway*
+  "When truthy, try to parse even if closing delimiters are missing."
+  nil)
+
 (def ^:dynamic ^:private *delimiter*
   nil)
 
@@ -76,7 +80,7 @@
 
 (defmethod parse-next* :eof
   [reader]
-  (when *delimiter*
+  (when (and *delimiter* (not *parse-anyway*))
     (reader/throw-reader reader "Unexpected EOF.")))
 
 ;; ### Whitespace
